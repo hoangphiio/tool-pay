@@ -318,28 +318,3 @@ tool-pay/
 ---
 
 _Made with ❤️ using Python & python-telegram-bot_
-
-Cách 1: Restart thủ công (Đơn giản nhất)
-Mở terminal đang chạy bot và nhấn Ctrl + C để dừng bot.
-Sau đó chạy lệnh sau để khởi động lại:
-bash
-./run.sh
-
-Cách 2: Lệnh restart nhanh (Nếu bot đang chạy ngầm)
-Nếu bạn không thấy terminal đang chạy bot đâu, bạn có thể dùng lệnh này để "giết" tiến trình cũ và chạy lại cái mới:
-
-bash
-kill $(pgrep -f "python bot.py") && ./run.sh
-
-Cách 3: Cài đặt PM2 để tự động restart (Khuyên dùng)
-Nếu bạn muốn dùng lệnh pm2 để bot tự khởi động lại khi có lỗi hoặc khi máy tính khởi động lại, bạn cần cài đặt Node.js trước:
-
-Tải và cài đặt Node.js từ: nodejs.org
-Sau đó cài đặt PM2:
-bash
-npm install -g pm2
-Chạy bot với PM2:
-bash
-pm2 start bot.py --name "tool-pay" --interpreter python3
-Lúc này bạn có thể dùng lệnh pm2 restart tool-pay thoải mái.
-Lời khuyên: Nếu bạn chỉ muốn chạy để kiểm tra các thay đổi vừa rồi, hãy dùng Cách 1 cho nhanh nhé!
