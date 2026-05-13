@@ -1,0 +1,11 @@
+# ===================================================
+# DANH SÁCH THƯ VIỆN CẦN CÀI (requirements.txt)
+# ===================================================
+# Cách cài: pip install -r requirements.txt
+# ===================================================
+
+# Thư viện chính để tạo Telegram Bot
+python-telegram-bot==20.7
+
+# Thư viện đọc file .env (chứa token bí mật)
+python-dotenv==1.0.0

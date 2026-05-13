@@ -1,0 +1,27 @@
+# ===================================================
+# FILE .gitignore - Những file KHÔNG đưa lên GitHub
+# ===================================================
+
+# File chứa token bí mật - TUYỆT ĐỐI không được commit
+.env
+
+# Thư mục data - chứa dữ liệu người dùng
+data/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
