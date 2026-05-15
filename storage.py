@@ -242,6 +242,28 @@ def reset_user(username: str, by: str) -> dict:
     return data[username]
 
 
+def delete_user(username: str, by: str) -> bool:
+    """
+    Xóa hoàn toàn user khỏi hệ thống.
+    Chỉ admin mới được dùng hàm này.
+
+    Tham số:
+        username: tên user cần xóa
+        by:       tên admin thực hiện lệnh
+
+    Trả về:
+        True nếu xóa thành công, False nếu user không tồn tại
+    """
+    data = _read_data()
+    username = username.lower()
+
+    if username in data:
+        del data[username]
+        _write_data(data)
+        return True
+    return False
+
+
 # ===================================================
 # HÀM FORMAT DỮ LIỆU
 # ===================================================

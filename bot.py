@@ -23,6 +23,7 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
 )
+from telegram import BotCommand
 from telegram.constants import ParseMode   # ParseMode.HTML
 
 # Import từ các file của chúng ta
@@ -34,6 +35,7 @@ from storage import (
     add_money,
     subtract_money,
     reset_user,
+    delete_user,
     get_history,
     format_money,
 )
@@ -148,6 +150,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
         "🔄 <b>Reset (chỉ admin)</b>\n"
         "<code>/reset @user</code> — Xóa số dư về 0\n\n"
+
+        "❌ <b>Xóa user (chỉ admin)</b>\n"
+        "<code>/deluser @user</code> — Xóa hoàn toàn user khỏi hệ thống\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━━━\n"
         "💡 <b>Mẹo:</b> Số tiền không cần dấu phẩy\n"
@@ -582,6 +587,57 @@ async def reset_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text(message, parse_mode=ParseMode.HTML)
 
 
+# --------------------------------------------------
+# /deluser - Xóa user (chỉ admin)
+# --------------------------------------------------
+async def deluser_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Xử lý lệnh /deluser (chỉ admin)
+    Cú pháp: /deluser @user
+    """
+    if not update.message:
+        return
+    # Kiểm tra quyền admin
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        await update.message.reply_text(
+            "🚫 <b>Bạn không có quyền thực hiện lệnh này!</b>\n"
+            "Chỉ admin mới có thể xóa user.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    args = context.args
+    if not args:
+        await update.message.reply_text(
+            "❌ Vui lòng nhập tên user!\n"
+            "VD: <code>/deluser @nam</code>",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    username = parse_username(args[0])
+    by = get_display_name(update.effective_user)
+    
+    success = delete_user(username, by)
+
+    if not success:
+        await update.message.reply_text(
+            f"❓ Không tìm thấy user <b>@{esc(username)}</b>.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    message = (
+        "🗑 <b>Đã xóa hoàn toàn user!</b>\n"
+        "━━━━━━━━━━━━━━━\n"
+        f"👤 User bị xóa: <b>@{esc(username)}</b>\n"
+        f"🕐 Bởi admin: @{esc(by)}"
+    )
+
+    await update.message.reply_text(message, parse_mode=ParseMode.HTML)
+
+
 # ===================================================
 # ERROR HANDLER - Bắt lỗi toàn cục
 # ===================================================
@@ -598,6 +654,23 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 # HÀM MAIN - KHỞI CHẠY BOT
 # ===================================================
 
+async def post_init(app: Application) -> None:
+    """Tự động cài đặt menu lệnh cho bot."""
+    commands = [
+        BotCommand("start", "Khởi động bot"),
+        BotCommand("help", "Xem danh sách lệnh"),
+        BotCommand("add", "Cộng tiền"),
+        BotCommand("sub", "Trừ tiền"),
+        BotCommand("balance", "Xem số dư"),
+        BotCommand("history", "Xem lịch sử"),
+        BotCommand("summary", "Tổng hợp tất cả"),
+        BotCommand("users", "Danh sách users"),
+        BotCommand("reset", "Reset số dư (Admin)"),
+        BotCommand("deluser", "Xóa user (Admin)")
+    ]
+    await app.bot.set_my_commands(commands)
+    logger.info("✅ Đã cập nhật menu lệnh trên Telegram!")
+
 def main() -> None:
     """
     Hàm chính để khởi động bot.
@@ -609,8 +682,8 @@ def main() -> None:
     init_storage()
     print(f"🚀 Đang khởi động {BOT_NAME}...")
 
-    # Tạo Application (ứng dụng bot)
-    app = Application.builder().token(BOT_TOKEN).build()
+    # Tạo Application (ứng dụng bot) với post_init
+    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     # --------------------------------------------------
     # ĐĂNG KÝ CÁC COMMAND HANDLERS
@@ -625,6 +698,7 @@ def main() -> None:
     app.add_handler(CommandHandler("summary", summary_command))
     app.add_handler(CommandHandler("users",   users_command))
     app.add_handler(CommandHandler("reset",   reset_command))
+    app.add_handler(CommandHandler("deluser", deluser_command))
 
     # Đăng ký error handler toàn cục
     app.add_error_handler(error_handler)
